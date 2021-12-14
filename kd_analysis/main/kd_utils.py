@@ -8,9 +8,8 @@ import hypnogram as hp
 import xarray as xr
 import kd_analysis.xrsig as xrsig
 import kd_analysis.xrsig.hypnogram_utils as xrhyp
-import kd_analysis.kd_plotting as kp
+import kd_analysis.main.kd_plotting as kp
 from scipy.stats import mode
-from ripple_detection.core import gaussian_smooth
 
 ##Functions for loading TDT SEV-stores, and visbrain hypnograms:
 def load_hypnograms(subject, experiment, condition, scoring_start_time, hypnograms_yaml_file="/Volumes/paxilline/Data/paxilline_project_materials/pax-hypno-paths.yaml"):

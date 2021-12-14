@@ -50,13 +50,15 @@ PACKAGE_DATA = {'kd_analysis': [pjoin('data', '*')]}
 
 INSTALL_REQUIRES = [
     "numpy",
+    "scipy",
     "pandas",
     "xarray",
     "matplotlib",
     "seaborn",
     "neurodsp",
-    "hypnogram @ git+https://github.com/CSC-UW/hypnogram.git@master#egg=hypnogram",
-    "ecephys @ git+https://github.com/CSC-UW/ecephys.git@kd#egg=ecephys"
+    "tdt",
+    "yaml",
+    "hypnogram @ git+https://github.com/CSC-UW/hypnogram.git@master#egg=hypnogram",    
 ]
 
 PYTHON_REQUIRES = ">= 3.7"

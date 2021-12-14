@@ -2,10 +2,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-import kd_analysis.kd_utils as kd
-
-
-
+import kd_analysis.main.kd_utils as kd
 
 hypno_colors = {
     "Wake": "forestgreen",
