@@ -1,0 +1,22 @@
+Metadata-Version: 1.2
+Name: kd-analysis
+Version: 0.1.dev0
+Summary: kd_analysis: personal repo for analysis functions
+Home-page: http://github.com/kortdriessen/kd_analysis
+Author: Kort Driessen
+Author-email: driessen2@wisc.edu
+Maintainer: Kort Driessen
+Maintainer-email: driessen2@wisc.edu
+License: MIT
+Description: 
+        kd_analysis: personal repo for analysis functions
+        
+Platform: OS Independent
+Classifier: Development Status :: 3 - Alpha
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Science/Research
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: OS Independent
+Classifier: Programming Language :: Python
+Classifier: Topic :: Scientific/Engineering
+Requires-Python: >= 3.7
