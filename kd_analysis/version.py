@@ -25,27 +25,38 @@ CLASSIFIERS = ["Development Status :: 3 - Alpha",
                "Topic :: Scientific/Engineering"]
 
 # Description should be a one-liner:
-description = "shablona: Put a one-liner description of your code here"
+description = "kd_analysis: personal repo for analysis functions"
 # Long description will go up on the pypi page
 long_description = """
-shablona: Put a longer description of your code here.
+kd_analysis: personal repo for analysis functions
 """
 
-NAME = "shablona"
-MAINTAINER = "Graham Findlay"
-MAINTAINER_EMAIL = "gfindlay@wisc.edu"
+NAME = "kd_analysis"
+MAINTAINER = "Kort Driessen"
+MAINTAINER_EMAIL = "driessen2@wisc.edu"
 DESCRIPTION = description
 LONG_DESCRIPTION = long_description
-URL = "http://github.com/CSC-UW/shablona"
+URL = "http://github.com/kortdriessen/kd_analysis"
 DOWNLOAD_URL = ""
 LICENSE = "MIT"
-AUTHOR = "Graham Findlay"
-AUTHOR_EMAIL = "gfindlay@wisc.edu"
+AUTHOR = "Kort Driessen"
+AUTHOR_EMAIL = "driessen2@wisc.edu"
 PLATFORMS = "OS Independent"
 MAJOR = _version_major
 MINOR = _version_minor
 MICRO = _version_micro
 VERSION = __version__
-PACKAGE_DATA = {'shablona': [pjoin('data', '*')]}
-REQUIRES = ["numpy"]
+PACKAGE_DATA = {'kd_analysis': [pjoin('data', '*')]}
+
+INSTALL_REQUIRES = [
+    "numpy",
+    "pandas",
+    "xarray",
+    "matplotlib",
+    "seaborn",
+    "neurodsp",
+    "hypnogram @ git+https://github.com/CSC-UW/hypnogram.git@master#egg=hypnogram",
+    "ecephys @ git+https://github.com/CSC-UW/ecephys.git@kd#egg=ecephys"
+]
+
 PYTHON_REQUIRES = ">= 3.7"
