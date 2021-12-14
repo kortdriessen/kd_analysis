@@ -57,7 +57,6 @@ INSTALL_REQUIRES = [
     "seaborn",
     "neurodsp",
     "tdt",
-    "yaml",
     "hypnogram @ git+https://github.com/CSC-UW/hypnogram.git@master#egg=hypnogram",    
 ]
 
