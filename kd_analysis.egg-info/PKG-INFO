@@ -1,4 +1,4 @@
-Metadata-Version: 1.2
+Metadata-Version: 2.1
 Name: kd-analysis
 Version: 0.1.dev0
 Summary: kd_analysis: personal repo for analysis functions
@@ -8,9 +8,6 @@ Author-email: driessen2@wisc.edu
 Maintainer: Kort Driessen
 Maintainer-email: driessen2@wisc.edu
 License: MIT
-Description: 
-        kd_analysis: personal repo for analysis functions
-        
 Platform: OS Independent
 Classifier: Development Status :: 3 - Alpha
 Classifier: Environment :: Console
@@ -20,3 +17,8 @@ Classifier: Operating System :: OS Independent
 Classifier: Programming Language :: Python
 Classifier: Topic :: Scientific/Engineering
 Requires-Python: >= 3.7
+
+
+kd_analysis: personal repo for analysis functions
+
+
