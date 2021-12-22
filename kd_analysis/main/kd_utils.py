@@ -10,6 +10,7 @@ import kd_analysis.xrsig as xrsig
 import kd_analysis.xrsig.hypnogram_utils as xrhyp
 import kd_analysis.main.kd_plotting as kp
 from scipy.stats import mode
+from scipy.ndimage.filters import gaussian_filter1d
 
 ##Functions for loading TDT SEV-stores, and visbrain hypnograms:
 def load_hypnograms(subject, experiment, condition, scoring_start_time, hypnograms_yaml_file="/Volumes/paxilline/Data/paxilline_project_materials/pax-hypno-paths.yaml"):
@@ -207,6 +208,7 @@ def get_spextrogram(sig, window_length=4, overlap=1, **kwargs):
     spg = xrsig.parallel_spectrogram_welch(sig, **kwargs)
     return spg
 
+
 def get_bandpower(spg, f_range):
     """Get band-limited power from a spectrogram.
     Parameters
@@ -361,6 +363,16 @@ def get_smoothed_ds(ds, smoothing_sigma=10, in_place=False):
         ds[da_name] = get_smoothed_da(da, smoothing_sigma, in_place)
     return ds
 
+def get_smoothed_df(df, col, smoothing_sigma=10):
+    df = df.copy()
+    period = mode(np.diff(df.index.values)).mode[0]
+    period = period/pd.to_timedelta(1, 's')
+    fs = 1/period
+    data = df[col]
+    smoothed_data = gaussian_smooth(data, sigma=smoothing_sigma, sampling_frequency=fs)
+    df[col] = smoothed_data
+    return df
+
 #Misc Analysis Utils:
 def get_frac_oc(hyps, hyp_keys):
     df = pd.concat([hyp.fractional_occupancy().to_frame() for hyp in hyps], keys=hyp_keys).unstack()*100
@@ -372,3 +384,28 @@ def x2df(xr, name=None, cols_2_drop=['time', 'timedelta']):
     else: 
         df = xr.to_dataframe().drop(labels=cols_2_drop, axis=1) 
     return df
+
+def gaussian_smooth(data, sigma, sampling_frequency, axis=0, truncate=8):
+    '''1D convolution of the data with a Gaussian.
+
+    The standard deviation of the gaussian is in the units of the sampling
+    frequency. The function is just a wrapper around scipy's
+    `gaussian_filter1d`, The support is truncated at 8 by default, instead
+    of 4 in `gaussian_filter1d`
+
+    Parameters
+    ----------
+    data : array_like
+    sigma : float
+    sampling_frequency : int
+    axis : int, optional
+    truncate : int, optional
+
+    Returns
+    -------
+    smoothed_data : array_like
+
+    '''
+    return gaussian_filter1d(
+        data, sigma * sampling_frequency, truncate=truncate, axis=axis,
+        mode='constant')

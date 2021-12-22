@@ -26,6 +26,11 @@ def quick_lineplot(data):
     ax = sns.lineplot(x=data.datetime, y=data.values, ax=ax)
     return ax
 
+def quick_histo(data):
+    f, ax = plt.subplots(figsize=(10,10))
+    ax = sns.histplot(data=data, ax=ax)
+    return ax
+
 def shade_hypno_for_me(
     hypnogram, ax=None, xlim=None
 ):
@@ -58,11 +63,11 @@ def plot_shaded_bp(spg, chan, bp_def, band, hyp, ax):
     bp_set = kd.get_bp_set2(spg, bp_def)
     
     bp = bp_set[band].sel(channel=chan)    
-    bp = kd.get_smoothed_da(bp, smoothing_sigma=14)
+    bp = kd.get_smoothed_da(bp, smoothing_sigma=8)
     
     ax = sns.lineplot(x=bp.datetime, y=bp, ax=ax)
-    shade_hypno_for_me(hypnogram=hyp, ax=ax)
-
+    if hyp is not None:
+        shade_hypno_for_me(hypnogram=hyp, ax=ax)
     ax.set(xlabel=None, ylabel='Raw '+band.capitalize()+' Power', xticks=[], xmargin=0)
     return ax
 
@@ -101,10 +106,10 @@ def spectro_plotter(
         ax.set_ylim(np.min(freqs[freqs > 0]), np.max(freqs))
     return ax
 
-def plot_bp_and_spectro(spg, chan, hyp, bp_def, band):
-    f, (bx, sx) = plt.subplots(nrows=2, ncols=1, figsize=(35, 10), sharex=True)
+def plot_bp_and_spectro(spg, chan, hyp, bp_def, band, fig_size=(35, 10)):
+    f, (bx, sx) = plt.subplots(nrows=2, ncols=1, figsize=fig_size, sharex=True)
     bx = plot_shaded_bp(spg, chan, bp_def, band, hyp, ax=bx)
-    sx = spectro_plotter(spg, chan, ax=sx)
+    sx = spectro_plotter(spg, chan, ax=sx, figsize=fig_size)
     return bx, sx
 
 
