@@ -12,7 +12,25 @@ import kd_analysis.main.kd_plotting as kp
 from scipy.stats import mode
 from scipy.ndimage.filters import gaussian_filter1d
 
-##Functions for loading TDT SEV-stores
+##Functions for loading TDT SEV-stores, and visbrain hypnograms:
+def load_hypnograms(subject, experiment, condition, scoring_start_time, hypnograms_yaml_file="/Volumes/paxilline/Data/paxilline_project_materials/pax-hypno-paths.yaml"):
+    
+    with open(hypnograms_yaml_file) as fp:
+        yaml_data = yaml.safe_load(fp)
+
+    root = Path(yaml_data[subject]["hypno-root"])
+    hypnogram_fnames = yaml_data[subject][experiment][condition]
+    hypnogram_paths = [root / (fname + ".txt") for fname in hypnogram_fnames]
+
+    hypnogram_start_times = pd.date_range(
+        start=scoring_start_time, periods=len(hypnogram_paths), freq="7200S"
+    )
+    hypnograms = [
+        hp.load_visbrain_hypnogram(path).as_datetime(start_time)
+        for path, start_time in zip(hypnogram_paths, hypnogram_start_times)
+    ]
+
+    return pd.concat(hypnograms).reset_index(drop=True)
 
 def sev_to_xarray(info, store):
     """Convert a single stream store to xarray format.
@@ -168,45 +186,27 @@ def fetch_xset(exp, key_list, analysis_root):
     dataset['name'] = exp
     return dataset
 
-def get_data_spg(block_path, store='', t1=0, t2=0, channel=None, sev=True, window_length=4, overlap=1, pandas=False, sel_chan=False):
+def get_data_spg(block_path, store='', t1=0, t2=0, channel=None, sev=True, window_length=4, overlap=1, pandas=False):
     if sev == True:
         data = load_sev_store(block_path, t1=t1, t2=t2, channel=channel, store=store)
     else:
         data = load_tev_store(block_path, t1=t1, t2=t2, channel=channel, store=store)
     spg = get_spextrogram(data, window_length=window_length, overlap=overlap)
     print('Remember to save all data in xset-style dictionary, and to add experiment name key (key = "name") before using save_xset')
-    
-    try:
-        data = data.swap_dims({'time': 'datetime'})
-        spg = spg.swap_dims({'time': 'datetime'})
-    except ValueError:
-        print('Passing ValueError on dimension swap in get_data_spg')
+    data = data.swap_dims({'time': 'datetime'})
+    spg = spg.swap_dims({'time': 'datetime'})
     if pandas == True: 
         data = data.to_dataframe().drop(labels=['time', 'timedelta'], axis=1)
         spg = spg.to_dataframe(name='Power').drop(labels=['time', 'timedelta'], axis=1)
-    
-    if sel_chan:
-        data = data.sel(channel=sel_chan)
-        spg = spg.sel(channel=sel_chan)
     return data, spg
 
 
 ## Spectrogram Utils
 def get_spextrogram(sig, window_length=4, overlap=1, **kwargs):
-    """ Calculates a spectrogram and returns as xr.DataArray with dimensions datetime, frequency, channel
-    Parameters
-    ----------
-    Sig --> Should be an xr.DataArray with time or datetime dimension
-    """
-    try:
-        sig = sig.swap_dims({'datetime':'time'})
-    except ValueError:
-        print('Passing ValueError since sig already had a time dimension')
-    
     kwargs['nperseg'] = int(window_length * sig.fs) # window length in number of samples
     kwargs['noverlap'] = int(overlap * sig.fs) # overlap in number of samples
     spg = xrsig.parallel_spectrogram_welch(sig, **kwargs)
-    return spg.swap_dims({'time': 'datetime'})
+    return spg
 
 
 def get_bandpower(spg, f_range):

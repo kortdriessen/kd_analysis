@@ -38,7 +38,7 @@ def keep_states(dat, hypnogram, states):
     except:
         dat = dat.swap_dims({"time": "datetime"})
     keep = hypnogram.keep_states(states).covers_time(dat.datetime)
-    return dat.sel(datetime=keep).swap_dims({'datetime': 'time'})
+    return dat.sel(datetime=keep)
 
 
 def keep_hypnogram_contents(dat, hypnogram):
