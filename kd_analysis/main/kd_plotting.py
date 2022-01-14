@@ -103,7 +103,7 @@ def spectro_plotter(
     #ax.figure.colorbar(im)
     ax.set_yscale(yscale)
     ax.set_ylabel("Frequency [Hz]")
-    ax.set_xlabel("Time [sec]")
+    ax.set_xlabel("Time")
     ax.set_title(title)
 
     if yscale == "log":
@@ -120,13 +120,6 @@ def plot_bps_all(spg, chans, ix, hyp, bp_def, band, fig_size=(35, 10)):
         plot_shaded_bp(spg, chan, bp_def, band, hyp, ax=axes[bax])
         spectro_plotter(spg, chan, ax=sax, figsize=(67,10))
 
-
-
-def bps_util(spg, chan, hyp, bp_def, band, fig_size=(35, 10)):
-    
-    plot_shaded_bp(spg, chan, bp_def, band, hyp, ax=bx)
-    spectro_plotter(spg, chan, ax=sx, figsize=fig_size)
-    return bx, sx
 
 def plot_bp_and_spectro(spg, chan, hyp, bp_def, band, fig_size=(35, 10)):
     f, (bx, sx) = plt.subplots(nrows=2, ncols=1, figsize=fig_size, sharex=True)

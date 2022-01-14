@@ -135,22 +135,22 @@ def save_key_list(key_list, text_file='key_lists.txt'):
     with open(text_file, "w") as output:
         output.write(str(key_list))
 
-def save_xset(ds, analysis_root):
+def save_xset(ds, analysis_root, key_list=None):
     """saves each component of an experimental 
     dataset dictionary (i.e. xr.arrays of the raw data and of the spectrograms), 
     as its own separate .nc file. All can be loaded back in as an experimental dataset dictionary
     using fetch_xset
     """
-    keys = get_key_list(ds)
+    keys = get_key_list(ds) if key_list == None else key_list
+
     for key in keys:
         try:
-            path = analysis_root / (ds['name'] + "_" + key + ".nc") 
+            path = analysis_root + (ds['name'] + "_" + key + ".nc") 
             ds[key].to_netcdf(path)
         except AttributeError:
-            path = analysis_root / (ds['name'] + "_" + key + ".tsv") 
+            print('excepting attribute error, trying to save as .tsv (i.e. saving hypnogram)')
+            path = analysis_root + (ds['name'] + "_" + key + ".tsv") 
             ds[key].write(path)
-        except:
-            pass
 
 
     print('Remember to save key list in order to fetch the data again')
@@ -336,12 +336,13 @@ def get_auc(psd, f_range):
         psd: xr.data_array. Could use kd.get_ss_psd for example"""
         return psd.sel(frequency=slice(*f_range)).sum(dim='frequency') / n_freq_bins(psd, f_range)
 
-def compare_auc(psd1, psd2, f_range, title='Relative SWA Rebound (PAX-SAL), NREM-Only'):
+def compare_auc(psd1, psd2, f_range, title='Relative SWA Rebound (pax-sal), NREM-Only, Frequency Range = '):
     """Uses get_auc on two separate PSD's, then compares them by taking PSD2-PSD1"""
     psd1 = get_auc(psd1, f_range)
     psd2 = get_auc(psd2, f_range)
     comp = psd2 - psd1
-    return comp.to_dataframe(title)
+    title = title + str(f_range[0]) + ' --> ' + str(f_range[1]) + ' Hz'
+    return comp.to_dataframe(name=title)
 
 #Misc utils for dealing with xarray structures: 
 def estimate_fs(da):
