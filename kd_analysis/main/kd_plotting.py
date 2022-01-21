@@ -30,7 +30,7 @@ def quick_lineplot(data):
 
 def quick_histo(data):
     f, ax = plt.subplots(figsize=(10,10))
-    ax = sns.histplot(data=data, ax=ax, bins=100)
+    ax = sns.histplot(data=data, ax=ax, bins=1000)
     return ax
 
 def shade_hypno_for_me(
