@@ -168,13 +168,27 @@ def fetch_xset(exp, key_list, analysis_root):
     dataset['name'] = exp
     return dataset
 
+def get_data(block_path, store='', t1=0, t2=0, channel=None, sev=True, pandas=False, sel_chan=False):
+    if sev == True:
+        data = load_sev_store(block_path, t1=t1, t2=t2, channel=channel, store=store)
+    else:
+        data = load_tev_store(block_path, t1=t1, t2=t2, channel=channel, store=store)
+    try:
+        data = data.swap_dims({'time': 'datetime'})
+    except ValueError:
+        print('Passing ValueError on dimension swap in get_data')
+    if pandas == True: 
+        data = data.to_dataframe().drop(labels=['time', 'timedelta'], axis=1)
+    if sel_chan:
+        data = data.sel(channel=sel_chan)
+    return data
+
 def get_data_spg(block_path, store='', t1=0, t2=0, channel=None, sev=True, window_length=4, overlap=1, pandas=False, sel_chan=False):
     if sev == True:
         data = load_sev_store(block_path, t1=t1, t2=t2, channel=channel, store=store)
     else:
         data = load_tev_store(block_path, t1=t1, t2=t2, channel=channel, store=store)
     spg = get_spextrogram(data, window_length=window_length, overlap=overlap)
-    print('Remember to save all data in xset-style dictionary, and to add experiment name key (key = "name") before using save_xset')
     
     try:
         data = data.swap_dims({'time': 'datetime'})
@@ -198,16 +212,23 @@ def get_spextrogram(sig, window_length=4, overlap=1, **kwargs):
     ----------
     Sig --> Should be an xr.DataArray with time or datetime dimension
     """
+    if type(sig) == str:
+        return sig
     try:
         sig = sig.swap_dims({'datetime':'time'})
-    except ValueError:
-        print('Passing ValueError since sig already had a time dimension')
-    
+    except:
+        print('Passing Error in get_spextrogram because sig already has time dimension')
     kwargs['nperseg'] = int(window_length * sig.fs) # window length in number of samples
     kwargs['noverlap'] = int(overlap * sig.fs) # overlap in number of samples
     spg = xrsig.parallel_spectrogram_welch(sig, **kwargs)
     return spg.swap_dims({'time': 'datetime'})
 
+def get_spg_from_dataset(ds, window_length=8, overlap=1):
+    spg_set = {}
+    kl = get_key_list(ds)
+    for key in kl:
+        spg_set[key] = get_spextrogram(ds[key], window_length, overlap)
+    return spg_set
 
 def get_bandpower(spg, f_range):
     """Get band-limited power from a spectrogram.
@@ -410,3 +431,9 @@ def gaussian_smooth(data, sigma, sampling_frequency, axis=0, truncate=8):
     return gaussian_filter1d(
         data, sigma * sampling_frequency, truncate=truncate, axis=axis,
         mode='constant')
+
+def t():
+    import time
+    t = time.localtime()
+    current_time = time.strftime("%H:%M:%S", t)
+    print(current_time)

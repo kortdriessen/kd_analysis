@@ -52,7 +52,7 @@ def shade_hypno_for_me(
         ax.axvspan(
             bout.start_time,
             bout.end_time,
-            alpha=0.3,
+            alpha=0.45,
             color=hypno_colors[bout.state],
             zorder=1000,
             ec="none",
@@ -78,7 +78,7 @@ def plot_shaded_bp(spg, chan, bp_def, band, hyp, ax):
 def spectro_plotter(
     spg,
     chan,
-    f_range=slice(0, 50),
+    f_range=slice(0, 20),
     t_range=None,
     yscale="linear",
     figsize=(35, 10),
@@ -149,8 +149,8 @@ def compare_psd(
     return g
 
 
-def plot_bp_set(spg, bands, hyp, channel, start_time, end_time, ss=12, figsize=(14,7), title=None):
-    spg = spg.sel(channel=channel, datetime=slice(start_time, end_time))
+def plot_bp_set(spg, bands, hyp, channel, ss=12, figsize=(30,30), title=None):
+    spg = spg.sel(channel=channel)
     bp_set = kd.get_bp_set2(spg, bands)
     bp_set = kd.get_smoothed_ds(bp_set, smoothing_sigma=ss)
     ax_index = np.arange(0, len(bands))
@@ -165,5 +165,46 @@ def plot_bp_set(spg, bands, hyp, channel, start_time, end_time, ss=12, figsize=(
         ax.set_ylabel('Raw '+k.capitalize()+' Power')
         ax.set_title(k.capitalize()+' Bandpower '+fr_str)
     fig.suptitle(title)
-    fig.tight_layout(pad=0.5)
+    fig.tight_layout(pad=1.5)
+    return fig, axes
+
+def get_muscle_energy(m, window_length=8, overlap=1):
+    fs = m.fs
+    m_data = m.values
+    nperseg = int(window_length*fs)
+    noverlap = int(overlap*fs)
+    nstep = nperseg-noverlap
+    shape = m_data.shape[:-1]+((m_data.shape[-1]-noverlap)//nstep, nperseg)
+    strides = m_data.strides[:-1]+(nstep*m_data.strides[-1], m_data.strides[-1])
+    chunked_data = np.lib.stride_tricks.as_strided(m_data, shape=shape, strides=strides)
+    
+    energies = np.empty(0)
+    for chunk in chunked_data:
+        abs_chunk = np.absolute(chunk)
+        energy_of_chunk = abs_chunk.mean()
+        energies = np.append(energies, energy_of_chunk)
+    
+    return energies
+
+
+
+def plot_muscle(m, mspg, bp_def=dict(super_deep = (0, 1), sub_delta = (0.5, 2), delta=(0.5, 4), theta=(4, 8), alpha = (8, 13), sigma = (11, 16), beta = (13, 30), low_gamma = (30, 55), high_gamma = (65, 90), omega = (100, 500)), ss=12, title=''):
+    m = m.sel(channel=1)
+    mspg = mspg.sel(channel=1)
+    fig, axes = plt.subplots(ncols=1, nrows=len(bp_def)+1, figsize=(30,30))
+    mbp = kd.get_bp_set2(mspg, bp_def)
+    mbps = kd.get_smoothed_ds(mbp, smoothing_sigma=ss)
+    me = get_muscle_energy(m)
+
+    ax_index = np.arange(0, len(bp_def))
+    keys = kd.get_key_list(bp_def)
+    for i, k in zip(ax_index, keys):
+        fr = mbps[k].f_range
+        fr_str = '('+str(fr[0]) + ' -> ' +str(fr[1])+' Hz)'
+        ax = sns.lineplot(x=mbps[k].datetime, y=mbps[k], ax=axes[i])
+        ax.set_ylabel('Raw '+k.capitalize()+' Power')
+        ax.set_title(k.capitalize()+' Bandpower '+fr_str)
+    ax = sns.lineplot(x=mbps.datetime.values, y=me, ax=axes[10])
+    fig.suptitle(title)
+    fig.tight_layout(pad=1.5)
     return fig, axes

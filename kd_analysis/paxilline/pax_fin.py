@@ -20,10 +20,10 @@ def pax_path(sub, x):
     path = '/Volumes/paxilline/Data/'+sub+'/'+sub+'_TANK/'+sub+'-'+x
     return path
 
-def get_paths(sub, xl):
+def get_paths(info_dict):
     paths = {}
-    for x in xl:
-        path = pax_path(sub, x)
+    for x in info_dict['complete_key_list']:
+        path = pax_path(info_dict['subject'], x)
         paths[x] = path
     return paths
 
@@ -77,11 +77,45 @@ def get_pax_hypnos(subject, key_list, start_times=None, save=False):
         save_dataset(h, name, key_list=key_list)
     return h
 
+def load_complete_dataset_from_blocks(info_dict, store, chans, time=4, start_times=None, save=False):
+    data_dict = {}
+    key_list = info_dict['complete_key_list']
+    path_dict = get_paths(info_dict)
+    
+    data_dict['x-time'] = str(time)+'-Hour'
+    data_dict['sub'] = info_dict['subject']
+    data_dict['dtype'] = 'EEG-Data' if store=='EEGr' else 'LFP-Data'
+    
+    if start_times==None:
+        for key in key_list:
+            if key.find('bl') != -1:
+                stop=43200
+            else:
+                stop=time*3600
+            data_dict[key] = kd.get_data(path_dict[key], store=store, t1=0, t2=stop, channel=chans, sev=True)
+    else:
+        for key in key_list:
+            if key.find('bl') != -1:
+                start=0
+                stop=43200
+            else:
+                start = start_times[key]
+                stop = start + (time*3600)
+            data_dict[key] = kd.get_data(path_dict[key], store=store, t1=start, t2=stop, channel=chans, sev=False)
+    if save == True:
+        sub_num = data_dict['sub'][4]
+        prefix = 'p'+sub_num
+        data_post_fix = 'de' if store == 'EEGr' else 'df'
+        data_name = prefix+data_post_fix
+        save_dataset(data_dict, data_name, key_list=key_list)
+    return data_dict
+
+
 def load_complete_spectroset_from_blocks(info_dict, store, chans, time=4, window_length=8, overlap=1, start_times=None, save=False):
     spg_dict = {}
     data_dict = {}
     key_list = info_dict['complete_key_list']
-    path_dict = get_paths(info_dict['subject'], key_list)
+    path_dict = get_paths(info_dict)
     
     spg_dict['x-time'] = str(time)+'-Hour'
     spg_dict['sub'] = info_dict['subject']
@@ -111,11 +145,13 @@ def load_complete_spectroset_from_blocks(info_dict, store, chans, time=4, window
         save_dataset(spg_dict, spg_name, key_list=key_list)
     return data_dict, spg_dict
 
+
+
 def load_complete_muscle_from_blocks(info_dict, store='EMGr', chans=[1,2], time=4, window_length=8, overlap=1, start_times=None, save=False):
     spg_dict = {}
     data_dict = {}
     key_list = info_dict['complete_key_list']
-    path_dict = get_paths(info_dict['subject'], key_list)
+    path_dict = get_paths(info_dict)
     
     spg_dict['x-time'] = str(time)+'-Hour'
     spg_dict['sub'] = info_dict['subject']
@@ -138,7 +174,7 @@ def load_complete_muscle_from_blocks(info_dict, store='EMGr', chans=[1,2], time=
             else:
                 start = start_times[key]
                 stop = start + (time*3600)
-            data_dict[key], spg_dict[key] = kd.get_data_spg(path_dict[key], store=store, t1=start, t2=stop, channel=chans, sev=False, window_length=window_length, overlap=overlap).sel(channel=1)
+            data_dict[key], spg_dict[key] = kd.get_data_spg(path_dict[key], store=store, t1=start, t2=stop, channel=chans, sev=False, window_length=window_length, overlap=overlap)
             data_dict[key] = data_dict[key].sel(channel=1)
             spg_dict[key] = spg_dict[key].sel(channel=1) 
     if save == True:
