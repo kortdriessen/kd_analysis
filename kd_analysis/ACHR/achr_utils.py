@@ -1,6 +1,10 @@
 import xarray as xr
+import pandas as pd
+import tdt
 import hypnogram as hp
 import kd_analysis.main.kd_utils as kd
+import kd_analysis.main.kd_hypno as kh
+import yaml
 
 
 bp_def = dict(delta=(0.5, 4), theta=(4, 8), sigma = (11, 16), beta = (13, 20), low_gamma = (40, 55), high_gamma = (65, 80), omega=(300, 700))
@@ -15,6 +19,24 @@ def get_paths(sub, xl):
         path = achr_path(sub, x)
         paths[x] = path
     return paths
+
+def load_hypnograms(subject_info, subtract_sd=False):
+    h = {}
+    subject = subject_info['subject']
+    root = '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/' + subject + '/' + 'hypnograms-' + subject + '/'
+    for key in subject_info['hypnos']:
+        bp = achr_path(subject, key)
+        block = tdt.read_block(bp, store='EEGr', t1=0, t2=1)
+        start_time =  pd.to_datetime(block.info.start_date)
+
+        if subtract_sd is not False:
+            t = pd.to_timedelta(subtract_sd, 'h')
+            start_time = start_time + t 
+            
+        path = root + 'hypno_' + key + '.txt'
+        h[key] = kh.load_hypno_file(path, st=start_time)
+    return h
+
 
 def load_complete_dataset_from_blocks(info_dict, store, chans, time=4, window_length=8, overlap=1, cut=0, start_times=None, spg=False, save=False):
     spg_dict = {}
@@ -74,20 +96,20 @@ def save_dataset(ds, name, key_list=None, folder=None):
 
 def save_hypnoset(ds, name, key_list=None, folder=None):
             keys = kd.get_key_list(ds) if key_list == None else key_list
-            analysis_root = '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data_complete/'+folder+'/' if folder is not None else '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data_complete/'
+            analysis_root = '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data_complete/'+folder+'/' if folder is not None else '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data/'
             for key in keys:
                 path = analysis_root + (name + "_" + key + ".tsv") 
                 ds[key].write(path)
 
 
-def load_saved_dataset(subject_info, set_name, folder=None):
+def load_saved_dataset(subject_info, set_name, folder=None, spg=False):
     """
-    Used to load either a spectrogram set, or a hypnogram set, as saved by kd.save_xset()
+    Used to load a dataset, can calculate hypnogram automatically also
     -------------------------------------------------------------------------------------
     """
     data_set = {}
     subject = subject_info['subject']
-    path_root = '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data/'+folder+'/' if folder is not None else '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data_complete/'
+    path_root = '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data/'+folder+'/' if folder is not None else '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data/'
     
     if set_name.find('h') != -1:
         for key in subject_info['complete_key_list']:
@@ -100,4 +122,10 @@ def load_saved_dataset(subject_info, set_name, folder=None):
             path = path_root+set_name+'_'+key+'.nc'
             data_set[key] = xr.load_dataarray(path)
         data_set['name'] = set_name
-    return data_set
+    if spg == True:
+        spg_set = kd.get_spg_from_dataset(data_set)
+        spg_set['sub'] = subject_info['subject']
+        spg_set['dtype'] = 'EEG-Data' if set_name.find('de') != -1 else 'LFP-Data'
+        return data_set, spg_set
+    else:
+        return data_set

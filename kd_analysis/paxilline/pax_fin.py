@@ -89,7 +89,7 @@ def load_complete_dataset_from_blocks(info_dict, store, chans, time=4, start_tim
     if start_times==None:
         for key in key_list:
             if key.find('bl') != -1:
-                stop=43200
+                stop=86400
             else:
                 stop=time*3600
             data_dict[key] = kd.get_data(path_dict[key], store=store, t1=0, t2=stop, channel=chans, sev=True)
