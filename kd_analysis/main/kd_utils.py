@@ -206,7 +206,7 @@ def get_data_spg(block_path, store='', t1=0, t2=0, channel=None, sev=True, windo
 
 
 ## Spectrogram Utils
-def get_spextrogram(sig, window_length=4, overlap=1, **kwargs):
+def get_spextrogram(sig, window_length=4, overlap=2, **kwargs):
     """ Calculates a spectrogram and returns as xr.DataArray with dimensions datetime, frequency, channel
     Parameters
     ----------
@@ -223,11 +223,11 @@ def get_spextrogram(sig, window_length=4, overlap=1, **kwargs):
     spg = xrsig.parallel_spectrogram_welch(sig, **kwargs)
     return spg.swap_dims({'time': 'datetime'})
 
-def get_spg_from_dataset(ds, window_length=8, overlap=1):
+def get_spg_from_dataset(ds, window_length=4, overlap=2):
     spg_set = {}
     kl = get_key_list(ds)
     for key in kl:
-        spg_set[key] = get_spextrogram(ds[key], window_length, overlap)
+        spg_set[key] = get_spextrogram(ds[key], window_length, overlap)    
     return spg_set
 
 def get_bandpower(spg, f_range):

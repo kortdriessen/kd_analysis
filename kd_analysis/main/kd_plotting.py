@@ -65,7 +65,7 @@ def plot_shaded_bp(spg, chan, bp_def, band, hyp, ax):
     bp_set = kd.get_bp_set2(spg, bp_def)
     
     bp = bp_set[band].sel(channel=chan)    
-    bp = kd.get_smoothed_da(bp, smoothing_sigma=14)
+    bp = kd.get_smoothed_da(bp, smoothing_sigma=6)
     
     #ymax=np.median(bp.values)*3
 
@@ -78,7 +78,7 @@ def plot_shaded_bp(spg, chan, bp_def, band, hyp, ax):
 def spectro_plotter(
     spg,
     chan,
-    f_range=slice(0, 20),
+    f_range=slice(0, 70),
     t_range=None,
     yscale="linear",
     figsize=(35, 10),
@@ -122,10 +122,10 @@ def plot_bps_all(spg, chans, ix, hyp, bp_def, band, fig_size=(35, 10)):
 
 
 def plot_bp_and_spectro(spg, chan, hyp, bp_def, band, fig_size=(35, 10)):
-    f, (bx, sx) = plt.subplots(nrows=2, ncols=1, figsize=fig_size, sharex=True)
+    fig, (bx, sx) = plt.subplots(nrows=2, ncols=1, figsize=fig_size, sharex=True)
     bx = plot_shaded_bp(spg, chan, bp_def, band, hyp, ax=bx)
     sx = spectro_plotter(spg, chan, ax=sx, figsize=fig_size)
-    return bx, sx
+    return fig
 
 
 def compare_psd(
@@ -145,7 +145,7 @@ def compare_psd(
         height=3,
         ci=None,
     )
-    g.set(xscale=scale, yscale=scale, ylabel='Power, '+state[0]+' PSD')
+    g.set(xscale=scale, yscale=scale, ylabel='Power, '+state[0]+' PSD', xlim=(0, 50), ylim=(0, 600))
     return g
 
 

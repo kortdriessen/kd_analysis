@@ -10,7 +10,7 @@ import yaml
 bp_def = dict(delta=(0.5, 4), theta=(4, 8), sigma = (11, 16), beta = (13, 20), low_gamma = (40, 55), high_gamma = (65, 80), omega=(300, 700))
 
 def achr_path(sub, x):
-    path = '/Volumes/opto_loc/Data/'+sub+'/'+sub+'_TANK/'+sub+'-'+x
+    path = '/Volumes/opto_loc/Data/'+sub+'/'+sub+'-'+x
     return path
 
 def get_paths(sub, xl):
@@ -38,8 +38,11 @@ def load_hypnograms(subject_info, subtract_sd=False):
     return h
 
 
-def load_complete_dataset_from_blocks(info_dict, store, chans, time=4, window_length=8, overlap=1, cut=0, start_times=None, spg=False, save=False):
-    spg_dict = {}
+def load_complete_dataset_from_blocks(info_dict, store, chans, start_at=0, time=4):
+    """
+    start_at --> number of hours into the recording to start
+    time --> number of hours total to load
+    """
     data_dict = {}
     key_list = info_dict['complete_key_list']
     path_dict = get_paths(info_dict['subject'], key_list)
@@ -49,22 +52,9 @@ def load_complete_dataset_from_blocks(info_dict, store, chans, time=4, window_le
             start = 0
             stop=43200
         else:
-            start = cut*3600
+            start = start_at*3600
             stop = start + (time*3600)
         data_dict[key]= kd.get_data(path_dict[key], store=store, t1=start, t2=stop, channel=chans, sev=True) 
-    if spg == True:
-        spg_dict = kd.get_spg_from_dataset(data_dict, window_length=window_length, overlap=overlap)
-        spg_dict['x-time'] = str(time)+'-Hour'
-        spg_dict['sub'] = info_dict['subject']
-        spg_dict['dtype'] = 'EEG-Data' if store=='EEGr' else 'LFP-Data'
-        if store == 'EMG_' or store == 'EMGr':
-            spg_dict['dtype'] = 'EMG-Data'
-            for key in key_list:
-                data_dict[key] = data_dict[key].sel(channel=1)
-                spg_dict[key] = spg_dict[key].sel(channel=1)
-            return data_dict, spg_dict
-        else:
-            return data_dict, spg_dict
     else:
         data_dict['x-time'] = str(time)+'-Hour'
         data_dict['sub'] = info_dict['subject']
@@ -96,7 +86,7 @@ def save_dataset(ds, name, key_list=None, folder=None):
 
 def save_hypnoset(ds, name, key_list=None, folder=None):
             keys = kd.get_key_list(ds) if key_list == None else key_list
-            analysis_root = '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data_complete/'+folder+'/' if folder is not None else '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data/'
+            analysis_root = '/Volumes/opto_loc/Data/ACR_PROJECT_MATERIALS/analysis_data_complete/'+folder+'/' if folder is not None else '/Volumes/opto_loc/Data/ACR_PROJECT_MATERIALS/analysis_data/'
             for key in keys:
                 path = analysis_root + (name + "_" + key + ".tsv") 
                 ds[key].write(path)
@@ -109,7 +99,7 @@ def load_saved_dataset(subject_info, set_name, folder=None, spg=False):
     """
     data_set = {}
     subject = subject_info['subject']
-    path_root = '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data/'+folder+'/' if folder is not None else '/Volumes/opto_loc/Data/ACHR_PROJECT_MATERIALS/analysis_data/'
+    path_root = '/Volumes/opto_loc/Data/ACR_PROJECT_MATERIALS/analysis_data/'+folder+'/' if folder is not None else '/Volumes/opto_loc/Data/ACR_PROJECT_MATERIALS/analysis_data/'
     
     if set_name.find('h') != -1:
         for key in subject_info['complete_key_list']:
