@@ -7,7 +7,7 @@ import kd_analysis.main.kd_hypno as kh
 import yaml
 
 
-bp_def = dict(delta=(0.5, 4), theta=(4, 8), sigma = (11, 16), beta = (13, 20), low_gamma = (40, 55), high_gamma = (65, 80), omega=(300, 700))
+bp_def = dict(delta1=(0.75, 1.75), delta2=(2.5, 3.5), delta=(0.75, 4), theta=(4, 8), alpha = (8, 13), sigma = (11, 16), beta = (13, 30), low_gamma = (30, 55), high_gamma = (65, 90), hz40 = [39, 41])
 
 def achr_path(sub, x):
     path = '/Volumes/opto_loc/Data/'+sub+'/'+sub+'-'+x
@@ -36,7 +36,6 @@ def load_hypnograms(subject_info, subtract_sd=False):
         path = root + 'hypno_' + key + '.txt'
         h[key] = kh.load_hypno_file(path, st=start_time)
     return h
-
 
 def load_complete_dataset_from_blocks(info_dict, store, chans, start_at=0, time=4):
     """

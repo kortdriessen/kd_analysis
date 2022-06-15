@@ -78,7 +78,7 @@ def plot_shaded_bp(spg, chan, bp_def, band, hyp, ax):
 def spectro_plotter(
     spg,
     chan,
-    f_range=slice(0, 70),
+    f_range=slice(0, 35),
     t_range=None,
     yscale="linear",
     figsize=(35, 10),
