@@ -182,7 +182,7 @@ def get_data(block_path, store='', t1=0, t2=0, channel=None, sev=True, pandas=Fa
         data = data.sel(channel=sel_chan)
     return data
 
-def get_data_spg(block_path, store='', t1=0, t2=0, channel=None, sev=True, window_length=4, overlap=1, pandas=False, sel_chan=False):
+def get_data_spg(block_path, store='', t1=0, t2=0, channel=None, sev=True, window_length=4, overlap=2, pandas=False, sel_chan=False):
     if sev == True:
         data = load_sev_store(block_path, t1=t1, t2=t2, channel=channel, store=store)
     else:

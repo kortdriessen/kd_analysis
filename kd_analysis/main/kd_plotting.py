@@ -129,7 +129,7 @@ def plot_bp_and_spectro(spg, chan, hyp, bp_def, band, fig_size=(35, 10)):
 
 
 def compare_psd(
-    psd1, psd2, state, keys=["condition1", "condition2"], key_name="condition", scale="log"
+    psd1, psd2, state, keys=["condition1", "condition2"], key_name="condition", scale="log", palette=['cyan', 'white']
 ):
     df = pd.concat(
         [psd1.to_dataframe("power"), psd2.to_dataframe("power")], keys=keys
@@ -139,13 +139,15 @@ def compare_psd(
         x="frequency",
         y="power",
         hue=key_name,
-        col="channel",
+        row="channel",
         kind="line",
+        legend=False,
         aspect=(16 / 9),
-        height=3,
+        height=6,
         ci=None,
+        palette=palette,
     )
-    g.set(xscale=scale, yscale=scale, ylabel='Power, '+state[0]+' PSD', xlim=(0, 50), ylim=(0, 600))
+    g.set(xscale=scale, yscale=scale, ylabel='NREM PSD, Normalized to Baseline', xlabel='Frequency', xlim=(1, 40))
     return g
 
 
